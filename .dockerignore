@@ -1,0 +1,27 @@
+.git/
+.gitignore
+test/
+test-reports/
+
+# Ignore bundler config.
+.bundle
+
+# Ignore all logfiles and tempfiles.
+log/*
+tmp/*
+!log/.keep
+!tmp/.keep
+
+# Ignore uploaded files in development
+storage/*
+
+.byebug_history
+
+*.swp
+doc/
+
+# Ignore file uploads
+public/system
+
+# Ignore master key for decrypting credentials and more.
+config/master.key

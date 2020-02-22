@@ -1,0 +1,37 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: eks-learning-backend
+spec:
+  template:
+    metadata:
+      labels:
+        name: eks-learning-backend
+    spec:
+      containers:
+      - name: rails-app
+        image: 255982529496.dkr.ecr.us-east-1.amazonaws.com/eks:25
+        env:
+        - name: EKS_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: database-config
+              key: database_name
+        - name: EKS_DATABASE_HOST
+          value: eks-learning.ccjd4cgozana.us-east-1.rds.amazonaws.com
+        - name: EKS_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: database-config
+              key: username
+        - name: EKS_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-config
+              key: password
+        - name: RAILS_MASTER_KEY
+          value: 290373f69dec3f97735e26a02faa3dda
+        - name: RAILS_ENV
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace

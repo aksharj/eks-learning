@@ -1,0 +1,66 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: eks-learning-backend
+spec:
+  template:
+    metadata:
+      labels:
+        name: eks-learning-backend
+    spec:
+      initContainers:
+        - name: nginx-config
+          image: 255982529496.dkr.ecr.us-east-1.amazonaws.com/eks:nginx-06
+          command: ['/bin/sh', '-c']
+          args: ["sed -i -e 's/gzip_types/gzip_types application\\/json/g' /etc/nginx/nginx.conf && mv /etc/nginx/* /etc/nginx-new/"]
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx-new
+        - name: copy-assets
+          image: 255982529496.dkr.ecr.us-east-1.amazonaws.com/eks:30
+          command: ['sh', '-c', 'cp -a /app/public/* /mnt/']
+          volumeMounts:
+            - name: assets
+              mountPath: /mnt
+      containers:
+        - name: rails-app
+          image: 255982529496.dkr.ecr.us-east-1.amazonaws.com/eks:30
+          env:
+            - name: EKS_DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: database-config
+                  key: database_name
+            - name: EKS_DATABASE_HOST
+              value: eks-learning.ccjd4cgozana.us-east-1.rds.amazonaws.com
+            - name: EKS_DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: database-config
+                  key: username
+            - name: EKS_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-config
+                  key: password
+            - name: RAILS_MASTER_KEY
+              value: 290373f69dec3f97735e26a02faa3dda
+            - name: RAILS_ENV
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+        - name: nginx
+          image: 255982529496.dkr.ecr.us-east-1.amazonaws.com/eks:nginx-06
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: assets
+              mountPath: /var/www
+            - name: nginx-config
+              mountPath: /etc/nginx
+      volumes:
+        - name: assets
+          emptyDir: {}
+        - name: nginx-config
+          emptyDir: {}
+
